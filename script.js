@@ -18,7 +18,7 @@ function addEntry(muscle) {
     id: Date.now(),
     muscle,
     date: new Date().toISOString(),
-    status: "none"
+    status: "none",
   });
   saveHistory(history);
 }
@@ -43,7 +43,7 @@ function cycleStatus(entry) {
 // DELETE ENTRY
 // ---------------------------
 function deleteEntry(id) {
-  const history = getHistory().filter(e => e.id !== id);
+  const history = getHistory().filter((e) => e.id !== id);
   saveHistory(history);
   renderHistory();
 }
@@ -58,7 +58,7 @@ function editDate(entry, history) {
 
   const newDate = prompt(
     "Enter new date (YYYY-MM-DD):",
-    entry.date.split("T")[0]
+    entry.date.split("T")[0],
   );
 
   longPressActive = false;
@@ -82,14 +82,14 @@ function editDate(entry, history) {
 function renderHistory() {
   const container = document.getElementById("history-list");
   const history = getHistory().sort(
-    (a, b) => new Date(b.date) - new Date(a.date)
+    (a, b) => new Date(b.date) - new Date(a.date),
   );
 
   container.innerHTML = "";
 
   let lastDate = null;
 
-  history.forEach(entry => {
+  history.forEach((entry) => {
     const entryDate = new Date(entry.date).toLocaleDateString();
 
     // Insert date separator
@@ -111,7 +111,7 @@ function renderHistory() {
         <strong>${entry.muscle}</strong>
         <span>${new Date(entry.date).toLocaleTimeString([], {
           hour: "2-digit",
-          minute: "2-digit"
+          minute: "2-digit",
         })}</span>
       </div>
       <button class="delete-btn">Delete</button>
@@ -141,12 +141,21 @@ function renderHistory() {
     info.addEventListener("mouseup", () => clearTimeout(pressTimer));
     info.addEventListener("mouseleave", () => clearTimeout(pressTimer));
 
-    // Mobile
-    info.addEventListener("touchstart", () => {
+    // Mobile long press
+    info.addEventListener("touchstart", (e) => {
+      e.preventDefault();
       pressTimer = setTimeout(() => editDate(entry, history), 600);
     });
-    info.addEventListener("touchend", () => clearTimeout(pressTimer));
-    info.addEventListener("touchmove", () => clearTimeout(pressTimer));
+
+    info.addEventListener("touchend", (e) => {
+      e.preventDefault();
+      clearTimeout(pressTimer);
+    });
+
+    info.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      clearTimeout(pressTimer);
+    });
 
     // Delete button
     item.querySelector(".delete-btn").onclick = () => deleteEntry(entry.id);
