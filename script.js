@@ -1,3 +1,6 @@
+// ---------------------------
+// HISTORY STORAGE
+// ---------------------------
 function getHistory() {
   return JSON.parse(localStorage.getItem("history") || "[]");
 }
@@ -6,6 +9,9 @@ function saveHistory(history) {
   localStorage.setItem("history", JSON.stringify(history));
 }
 
+// ---------------------------
+// ADD ENTRY
+// ---------------------------
 function addEntry(muscle) {
   const history = getHistory();
   history.push({
@@ -25,20 +31,59 @@ function logWithFlash(tile, muscle) {
   setTimeout(() => tile.classList.remove("flash"), 250);
 }
 
+// ---------------------------
+// STATUS CYCLING
+// ---------------------------
 function cycleStatus(entry) {
   const order = ["none", "green", "amber", "red"];
   entry.status = order[(order.indexOf(entry.status) + 1) % order.length];
 }
 
+// ---------------------------
+// DELETE ENTRY
+// ---------------------------
 function deleteEntry(id) {
   const history = getHistory().filter(e => e.id !== id);
   saveHistory(history);
   renderHistory();
 }
 
+// ---------------------------
+// EDIT DATE (LONG PRESS)
+// ---------------------------
+let longPressActive = false;
+
+function editDate(entry, history) {
+  longPressActive = true;
+
+  const newDate = prompt(
+    "Enter new date (YYYY-MM-DD):",
+    entry.date.split("T")[0]
+  );
+
+  longPressActive = false;
+
+  if (!newDate) return;
+
+  const old = new Date(entry.date);
+  const [year, month, day] = newDate.split("-");
+  old.setFullYear(year);
+  old.setMonth(month - 1);
+  old.setDate(day);
+
+  entry.date = old.toISOString();
+  saveHistory(history);
+  renderHistory();
+}
+
+// ---------------------------
+// RENDER HISTORY
+// ---------------------------
 function renderHistory() {
   const container = document.getElementById("history-list");
-  const history = getHistory().sort((a, b) => new Date(b.date) - new Date(a.date));
+  const history = getHistory().sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
 
   container.innerHTML = "";
 
@@ -47,7 +92,7 @@ function renderHistory() {
   history.forEach(entry => {
     const entryDate = new Date(entry.date).toLocaleDateString();
 
-    // Insert date separator if needed
+    // Insert date separator
     if (entryDate !== lastDate) {
       const sep = document.createElement("div");
       sep.className = "date-separator";
@@ -64,25 +109,44 @@ function renderHistory() {
     item.innerHTML = `
       <div class="history-info ${colorClass}">
         <strong>${entry.muscle}</strong>
-        <span>${new Date(entry.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        <span>${new Date(entry.date).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit"
+        })}</span>
       </div>
       <button class="delete-btn">Delete</button>
     `;
 
-    // Tap to cycle color
-    item.querySelector(".history-info").onclick = () => {
+    const info = item.querySelector(".history-info");
+
+    // ---------------------------
+    // TAP → cycle color
+    // ---------------------------
+    info.onclick = () => {
+      if (longPressActive) return; // prevent conflict
       cycleStatus(entry);
       saveHistory(history);
       renderHistory();
     };
 
-    // Long press to edit date
+    // ---------------------------
+    // LONG PRESS (mobile + desktop)
+    // ---------------------------
     let pressTimer;
-    item.querySelector(".history-info").addEventListener("mousedown", () => {
+
+    // Desktop
+    info.addEventListener("mousedown", () => {
       pressTimer = setTimeout(() => editDate(entry, history), 600);
     });
-    item.querySelector(".history-info").addEventListener("mouseup", () => clearTimeout(pressTimer));
-    item.querySelector(".history-info").addEventListener("mouseleave", () => clearTimeout(pressTimer));
+    info.addEventListener("mouseup", () => clearTimeout(pressTimer));
+    info.addEventListener("mouseleave", () => clearTimeout(pressTimer));
+
+    // Mobile
+    info.addEventListener("touchstart", () => {
+      pressTimer = setTimeout(() => editDate(entry, history), 600);
+    });
+    info.addEventListener("touchend", () => clearTimeout(pressTimer));
+    info.addEventListener("touchmove", () => clearTimeout(pressTimer));
 
     // Delete button
     item.querySelector(".delete-btn").onclick = () => deleteEntry(entry.id);
@@ -91,23 +155,9 @@ function renderHistory() {
   });
 }
 
-// Date editing function
-function editDate(entry, history) {
-  const newDate = prompt("Enter new date (YYYY-MM-DD):", entry.date.split("T")[0]);
-  if (!newDate) return;
-
-  // Keep original time, only change date
-  const old = new Date(entry.date);
-  const [year, month, day] = newDate.split("-");
-  old.setFullYear(year);
-  old.setMonth(month - 1);
-  old.setDate(day);
-
-  entry.date = old.toISOString();
-  saveHistory(history);
-  renderHistory();
-}
-
+// ---------------------------
+// SERVICE WORKER
+// ---------------------------
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js");
 }
