@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Lite</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <header>
+    <h1>Fitness Lite</h1>
+    <a class="nav-btn" href="history.html">History</a>
+  </header>
+
+ <main id="muscle-grid"></main>
+
+<script src="script.js"></script>
+<script>
+  const muscles = [
+    "Abs", "Chest", "Shoulders", "Upper Back", "Mid Back", "Lower Back",
+    "Quads", "Hamstrings", "Calves", "Glutes", "Triceps", "Biceps", "Obliques"
+  ];
+
+  const grid = document.getElementById("muscle-grid");
+
+  muscles.forEach(m => {
+    const tile = document.createElement("div");
+    tile.className = "muscle-tile";
+    tile.textContent = m;
+    tile.onclick = () => logWithFlash(tile, m);
+    grid.appendChild(tile);
+  });
+</script>
+
+</body>
+</html>
