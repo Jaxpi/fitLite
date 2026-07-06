@@ -129,45 +129,26 @@ function renderHistory() {
       renderHistory();
     };
 
-    // ---------------------------
-    // LONG PRESS (mobile + desktop)
-    // ---------------------------
-    let pressTimer;
+// ---------------------------
+// LONG PRESS (mobile + desktop via pointer events)
+// ---------------------------
+let pressTimer;
 
-    // Desktop
-    info.addEventListener("mousedown", () => {
-      pressTimer = setTimeout(() => editDate(entry, history), 600);
-    });
-    info.addEventListener("mouseup", () => clearTimeout(pressTimer));
-    info.addEventListener("mouseleave", () => clearTimeout(pressTimer));
+info.addEventListener("pointerdown", () => {
+  pressTimer = setTimeout(() => editDate(entry, history), 600);
+});
 
-    // Mobile long press (requires passive:false)
-    info.addEventListener(
-      "touchstart",
-      (e) => {
-        e.preventDefault();
-        pressTimer = setTimeout(() => editDate(entry, history), 600);
-      },
-      { passive: false },
-    );
+info.addEventListener("pointerup", () => {
+  clearTimeout(pressTimer);
+});
 
-    info.addEventListener(
-      "touchend",
-      (e) => {
-        e.preventDefault();
-        clearTimeout(pressTimer);
-      },
-      { passive: false },
-    );
+info.addEventListener("pointercancel", () => {
+  clearTimeout(pressTimer);
+});
 
-    info.addEventListener(
-      "touchmove",
-      (e) => {
-        e.preventDefault();
-        clearTimeout(pressTimer);
-      },
-      { passive: false },
-    );
+info.addEventListener("pointermove", () => {
+  clearTimeout(pressTimer);
+});
 
     // Delete button
     item.querySelector(".delete-btn").onclick = () => deleteEntry(entry.id);
