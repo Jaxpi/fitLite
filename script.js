@@ -141,21 +141,33 @@ function renderHistory() {
     info.addEventListener("mouseup", () => clearTimeout(pressTimer));
     info.addEventListener("mouseleave", () => clearTimeout(pressTimer));
 
-    // Mobile long press
-    info.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      pressTimer = setTimeout(() => editDate(entry, history), 600);
-    });
+    // Mobile long press (requires passive:false)
+    info.addEventListener(
+      "touchstart",
+      (e) => {
+        e.preventDefault();
+        pressTimer = setTimeout(() => editDate(entry, history), 600);
+      },
+      { passive: false },
+    );
 
-    info.addEventListener("touchend", (e) => {
-      e.preventDefault();
-      clearTimeout(pressTimer);
-    });
+    info.addEventListener(
+      "touchend",
+      (e) => {
+        e.preventDefault();
+        clearTimeout(pressTimer);
+      },
+      { passive: false },
+    );
 
-    info.addEventListener("touchmove", (e) => {
-      e.preventDefault();
-      clearTimeout(pressTimer);
-    });
+    info.addEventListener(
+      "touchmove",
+      (e) => {
+        e.preventDefault();
+        clearTimeout(pressTimer);
+      },
+      { passive: false },
+    );
 
     // Delete button
     item.querySelector(".delete-btn").onclick = () => deleteEntry(entry.id);
