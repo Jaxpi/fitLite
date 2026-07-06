@@ -51,29 +51,36 @@ function deleteEntry(id) {
 // ---------------------------
 // EDIT DATE (LONG PRESS)
 // ---------------------------
-let longPressActive = false;
+function openDatePopup(entry, history) {
+  const popup = document.getElementById("date-popup");
+  const input = document.getElementById("date-input");
+  const saveBtn = document.getElementById("date-save");
+  const cancelBtn = document.getElementById("date-cancel");
 
-function editDate(entry, history) {
-  longPressActive = true;
+  // Set initial date
+  input.value = entry.date.split("T")[0];
 
-  const newDate = prompt(
-    "Enter new date (YYYY-MM-DD):",
-    entry.date.split("T")[0],
-  );
+  popup.classList.remove("hidden");
 
-  longPressActive = false;
+  cancelBtn.onclick = () => {
+    popup.classList.add("hidden");
+  };
 
-  if (!newDate) return;
+  saveBtn.onclick = () => {
+    const newDate = input.value;
+    if (!newDate) return;
 
-  const old = new Date(entry.date);
-  const [year, month, day] = newDate.split("-");
-  old.setFullYear(year);
-  old.setMonth(month - 1);
-  old.setDate(day);
+    const old = new Date(entry.date);
+    const [year, month, day] = newDate.split("-");
+    old.setFullYear(year);
+    old.setMonth(month - 1);
+    old.setDate(day);
 
-  entry.date = old.toISOString();
-  saveHistory(history);
-  renderHistory();
+    entry.date = old.toISOString();
+    saveHistory(history);
+    popup.classList.add("hidden");
+    renderHistory();
+  };
 }
 
 // ---------------------------
@@ -130,25 +137,33 @@ function renderHistory() {
     };
 
 // ---------------------------
-// LONG PRESS (mobile + desktop via pointer events)
+// LONG PRESS (mobile + desktop)
 // ---------------------------
 let pressTimer;
+let startX, startY;
 
-info.addEventListener("pointerdown", () => {
-  pressTimer = setTimeout(() => editDate(entry, history), 600);
+info.addEventListener("pointerdown", (e) => {
+  startX = e.clientX;
+  startY = e.clientY;
+
+  pressTimer = setTimeout(() => {
+    openDatePopup(entry, history);
+  }, 600);
 });
 
-info.addEventListener("pointerup", () => {
-  clearTimeout(pressTimer);
+info.addEventListener("pointermove", (e) => {
+  const dx = Math.abs(e.clientX - startX);
+  const dy = Math.abs(e.clientY - startY);
+
+  // Cancel long press if finger moves too much
+  if (dx > 10 || dy > 10) {
+    clearTimeout(pressTimer);
+  }
 });
 
-info.addEventListener("pointercancel", () => {
-  clearTimeout(pressTimer);
-});
+info.addEventListener("pointerup", () => clearTimeout(pressTimer));
+info.addEventListener("pointercancel", () => clearTimeout(pressTimer));
 
-info.addEventListener("pointermove", () => {
-  clearTimeout(pressTimer);
-});
 
     // Delete button
     item.querySelector(".delete-btn").onclick = () => deleteEntry(entry.id);

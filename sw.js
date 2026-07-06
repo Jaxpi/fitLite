@@ -1,4 +1,4 @@
-const CACHE_NAME = "fitness-lite-v5.2";
+const CACHE_NAME = "fitness-lite-v5.21";
 const FILES = [
   "/",
   "/index.html",
